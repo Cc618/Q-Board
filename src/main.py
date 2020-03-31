@@ -1,22 +1,22 @@
-import env
+import envs
 
 
-ev = env.TicTacToe()
-ev.reset()
+env = envs.TicTacToe()
+env.reset()
 
-ev.step(0)
-ev.step(1)
-ev.step(2)
-ev.step(4)
-ev.step(5)
-ev.step(3)
-ev.step(6)
-ev.step(8)
+env.step(0)
+env.step(1)
+env.step(2)
+env.step(4)
+env.step(5)
+env.step(3)
+env.step(6)
+env.step(8)
 
-a = ev.step(7)
+a = env.step(7)
 print(*a)
 
-ev.render()
+env.render()
 
 
 
