@@ -18,6 +18,7 @@ Q Board aims to implement AIs using Deep Q Learning that play against themselves
 - dqn : Q Networks
 - envs : Environments
 - log : Logger and utils to print / process text
+- mem : Memories (replay buffers)
 - main : App's entry
 - utils : Extra functions for Pytorch
 
