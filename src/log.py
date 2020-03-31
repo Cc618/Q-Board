@@ -32,9 +32,24 @@ class Logger:
     '''
         Used to display stats
     '''
-    def __init__(self):
+    def __init__(self, log_freq):
+        self.log_freq = log_freq
+
         self.losses = []
         self.rewards = []
+        self.victories = []
+        self.draws = []
+
+    def update(self, epoch, reward, victories, draws):
+        '''
+            Appends data on a game and display it if necessary
+        '''
+        self.rewards.append(reward)
+        self.victories.append(victories)
+        self.draws.append(draws)
+
+        if epoch % self.log_freq == 0:
+            self.show(epoch)
     
     def show(self, epoch):
         '''
@@ -48,6 +63,8 @@ class Logger:
 
         self.losses.clear()
         self.rewards.clear()
+        self.draws.clear()
+        self.victories.clear()
 
         s = '| '
         s += f'Epoch : {epoch:5d} | '

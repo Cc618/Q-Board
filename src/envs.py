@@ -93,6 +93,32 @@ def test(p1_act, p2_act, env, games=100):
     return victories, draws
 
 
+def train(p1_act, p2_act, mem, env, epochs, logger, train_p2=True):
+    '''
+        Trains p1 on several games on env
+    - p1_act / p2_act : Functor f(state) -> action
+    - mem : Memory
+    - logger : Used to display stats
+    - train_p2 : If True, adds also p2's trajectories
+    '''
+    # TODO : Save
+    for e in range(1, epochs + 1):
+        total_reward = 0
+        state, p1 = env.reset()
+        done = False
+        while not done:
+            action = (p1_act if p1 else p2_act)(state)
+            state, reward, done, new_p1 = env.step(action)
+
+            if p1:
+                total_reward += reward
+
+            p1 = new_p1
+
+        victory = int(not env.was_draw and ((p1 and reward > 0) or (not p1 and reward < 0)))
+        logger.update(e, total_reward, victory, int(env.was_draw))
+
+
 class BoardEnv:
     '''
         Abstract class for all environments
