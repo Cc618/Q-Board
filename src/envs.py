@@ -67,7 +67,7 @@ def play(p1_act, p2_act, env, render=True):
     return total_p1_reward, total_p2_reward
 
 
-def test(p1_act, p2_act, env, games=100):
+def test(p1_act, p2_act, env, games=100, state_preprocessor=lambda x: x):
     '''
         Tests p1 on several games on env
     - p1_act / p2_act : Functor f(state) -> action
@@ -79,7 +79,7 @@ def test(p1_act, p2_act, env, games=100):
         state, p1 = env.reset()
         done = False
         while not done:
-            action = (p1_act if p1 else p2_act)(state)
+            action = (p1_act if p1 else p2_act)(state_preprocessor(state))
             state, reward, done, new_p1 = env.step(action)
 
             if done:
@@ -93,30 +93,38 @@ def test(p1_act, p2_act, env, games=100):
     return victories, draws
 
 
-def train(p1_act, p2_act, mem, env, epochs, logger, train_p2=True):
+def train(p1, p2_act, mem, env, epochs, logger, train_p2=True):
     '''
         Trains p1 on several games on env
-    - p1_act / p2_act : Functor f(state) -> action
+    - p1 : Agent
+    - p2_act : Functor f(state) -> action
     - mem : Memory
     - logger : Used to display stats
     - train_p2 : If True, adds also p2's trajectories
+    * The state is preprocessed by p1
     '''
     # TODO : Save
     # TODO : Replace p1_act by p1
     for e in range(1, epochs + 1):
         total_reward = 0
-        state, p1 = env.reset()
+        state, p1_turn = env.reset()
+        state = p1.state_preprocessor(state)
         done = False
         while not done:
-            act = p1_act if p1 else p2_act
+            act = p1.act if p1_turn else p2_act
             action = act(state)
 
-            state, reward, done, new_p1 = env.step(action)
+            new_state, reward, done, new_p1_turn = env.step(action)
+            new_state = p1.state_preprocessor(new_state)
 
-            if p1:
+            if p1_turn:
                 total_reward += reward
 
-            p1 = new_p1
+            if train_p2 or p1_turn:
+                mem.add(action, state, new_state, reward, done)
+
+            state = new_state
+            p1_turn = new_p1_turn
 
         victory = int(not env.was_draw and ((p1 and reward > 0) or (not p1 and reward < 0)))
         logger.update(e, total_reward, victory, int(env.was_draw))

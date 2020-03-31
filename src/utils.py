@@ -2,11 +2,14 @@ import torch.nn.functional as F
 import torch as T
 
 
-def f_one_hot_state(depth, min_depth):
+def f_one_hot_state(depth, min_depth, flatten=False):
     '''
         Functor for one_hot_state
     '''
-    return lambda state: one_hot_state(state, depth, min_depth)
+    if flatten:
+        return lambda state: one_hot_state(state, depth, min_depth).view(-1)
+    else:
+        return lambda state: one_hot_state(state, depth, min_depth)
 
 def one_hot_state(state, depth, min_depth):
     '''

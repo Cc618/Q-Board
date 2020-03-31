@@ -20,6 +20,8 @@ class QAgent:
     def __init__(self, n_state, n_action, dqn, logger=None, lr=1e-3,
                 discount_factor=.98, exploration_decay=.99,
                 exploration_min=.05, state_preprocessor=lambda x: x):
+        super().__init__()
+
         self.n_state = n_state
         self.n_action = n_action
         self.dqn = dqn
@@ -32,15 +34,13 @@ class QAgent:
         self.exploration_rate = 1
         self.opti = optim.Adam(self.dqn.parameters(), lr=lr)
 
-    def __get_loss(self, actions, states, next_states, rewards, dones):
+    def get_loss(self, actions, states, next_states, rewards, dones):
         '''
             Computes the loss, doesn't back prop
         '''
         raise NotImplementedError()
 
     def get_rewards(self, state):
-        state = self.state_preprocessor(state)
-
         return self.dqn(state)
 
     def act(self, state):
@@ -57,7 +57,7 @@ class QAgent:
         # TODO : Exploration rate change here ?
         self.exploration_rate = min(self.exploration_rate * self.exploration_decay, self.exploration_min)
 
-        loss = self.__get_loss(actions, states, next_states, rewards, dones)
+        loss = self.get_loss(actions, states, next_states, rewards, dones)
 
         if self.logger:
             self.logger.losses.append(loss)
@@ -77,7 +77,7 @@ class DQNAgent(QAgent):
         '''
         super().__init__(n_state, n_action, dqn, *args, **kwargs)
 
-    def __get_loss(self, actions, states, next_states, rewards, dones):
+    def get_loss(self, actions, states, next_states, rewards, dones):
         # Predicted Q values
         q = (self.dqn(states) * F.one_hot(actions, self.n_action)).sum(1)
 

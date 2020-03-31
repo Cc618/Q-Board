@@ -24,16 +24,17 @@ test_games = 100
 mem_size = 200
 log_freq = 500
 
+n_state = env.n_state * env.n_action
 log = Logger(log_freq)
-net = dqn.MLP(env.n_state * env.n_action, env.n_action, [256], flatten=True)
-ai = agents.DQNAgent(env.n_state, env.n_action, net, logger=log, lr=2e-4, state_preprocessor=f_one_hot_state(env.n_action, -1))
+net = dqn.MLP(n_state, env.n_action, [256], flatten=True)
+ai = agents.DQNAgent(env.n_state, env.n_action, net, logger=log, lr=2e-4, state_preprocessor=f_one_hot_state(env.n_action, -1, flatten=True))
 rand_act = envs.TicTacToe.random_act()
 
 # Training
-envs.train(ai.act, rand_act, LinearMemory(env.n_state, mem_size, ai.learn), env, epochs, log, False)
+envs.train(ai, rand_act, LinearMemory(n_state, mem_size, ai.learn), env, epochs, log, False)
 
 # Testing
-win, draw = envs.test(ai.act, rand_act, env)
+win, draw = envs.test(ai.act, rand_act, env, state_preprocessor=ai.state_preprocessor)
 
 print(f'Test on {test_games} games, victories : {win} draws : {draw}')
 print(f'Win or draw rate : {(win + draw) / test_games * 100:.1f} %')
