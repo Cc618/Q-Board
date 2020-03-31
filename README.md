@@ -12,6 +12,15 @@ All environments use only Pytorch tensors.
 
 Q Board aims to implement AIs using Deep Q Learning that play against themselves.
 
+## Files
+
+- agents : Q Learning algorithms
+- dqn : Q Networks
+- envs : Environments
+- log : Logger and utils to print / process text
+- main : App's entry
+- utils : Extra functions for Pytorch
+
 ## Depedencies
 
 - Python 3 (written in 3.7)
