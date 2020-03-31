@@ -12,6 +12,60 @@ def seed(seed):
     T.manual_seed(seed)
 
 
+def random_act(n_action):
+    '''
+        Returns a functor which takes random actions
+    - Returns f(state) -> action
+    !!! Can take invalid actions
+    '''
+    def f(_):
+        return rand.randint(0, n_action - 1)
+
+    return f
+
+
+def user_act(n_action):
+    '''
+        Returns a functor which takes actions from user
+    - Returns f(state) -> action
+    '''
+    def f(_):
+        action = int(input(f'Action from 0 to {n_action} > '))
+        while action < 0 or action >= n_action:
+            print('Invalid action')
+            action = int(input(f'Action from 0 to {n_action} > '))
+
+        return action
+
+    return f
+
+
+def play(p1_act, p2_act, env, render=True):
+    '''
+        Plays a game on env
+    - p1_act / p2_act : Functor f(state) -> action
+    - Returns total reward for p1 and p2 (in a tuple)
+    '''
+    state, p1 = env.reset()
+    done = False
+    total_p1_reward, total_p2_reward = 0, 0
+    while not done:
+        action = (p1_act if p1 else p2_act)(state)
+        state, reward, done, new_p1 = env.step(action)
+
+        if p1:
+            total_p1_reward += reward
+        else:
+            total_p2_reward += reward
+
+        if render:
+            env.render()
+
+        p1 = new_p1
+
+    return total_p1_reward, total_p2_reward
+
+
 class BoardEnv:
     '''
         Abstract class for all environments
