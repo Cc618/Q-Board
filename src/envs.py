@@ -67,6 +67,32 @@ def play(p1_act, p2_act, env, render=True):
     return total_p1_reward, total_p2_reward
 
 
+def test(p1_act, p2_act, env, games=100):
+    '''
+        Tests p1 on several games on env
+    - p1_act / p2_act : Functor f(state) -> action
+    - Returns (victories, draws)
+    '''
+    victories = 0
+    draws = 0
+    for _ in range(games):
+        state, p1 = env.reset()
+        done = False
+        while not done:
+            action = (p1_act if p1 else p2_act)(state)
+            state, reward, done, new_p1 = env.step(action)
+
+            if done:
+                if env.was_draw:
+                    draws += 1
+                elif (p1 and reward > 0) or (not p1 and reward < 0):
+                    victories += 1
+
+            p1 = new_p1
+
+    return victories, draws
+
+
 class BoardEnv:
     '''
         Abstract class for all environments
@@ -94,6 +120,7 @@ class BoardEnv:
         !!! Must be called by children
         '''
         self.p1_turn = rand.randint(0, 1) == 0
+        self.was_draw = False
 
     def to_str(self):
         '''
@@ -156,6 +183,7 @@ class TicTacToe(BoardEnv):
 
         # Check draw
         if self.turns >= 9:
+            self.was_draw = True
             return TicTacToe.REWARD_DRAW, True
 
         # Not a game end
