@@ -2,6 +2,7 @@
 
 import random as rand
 import torch as T
+from log import as_red, as_blue, as_green
 
 
 def seed(seed):
@@ -82,7 +83,7 @@ class BoardEnv:
         self.reset()
 
     def __repr__(self):
-        s = 'P1\n' if self.p1_turn else 'P2\n'
+        s = as_green('P1\n' if self.p1_turn else 'P2\n')
 
         return s + self.to_str()
 
@@ -181,9 +182,9 @@ class TicTacToe(BoardEnv):
                 Returns the string representation of the state
             '''
             if c == -1:
-                return 'O'
+                return as_blue('O')
             if c == 1:
-                return 'X'
+                return as_red('X')
             return str(i)
 
         for y in range(3):
@@ -216,3 +217,17 @@ class TicTacToe(BoardEnv):
         self.p1_turn = not self.p1_turn
 
         return (self.state if turn else self.__p2_state()), reward, done, self.p1_turn
+
+    @classmethod
+    def random_act(cls):
+        '''
+            Creates a functor that takes valid random actions for this env
+        '''
+        def act(state):
+            a = rand.randint(0, 8)
+            while state[a] != 0:
+                a = rand.randint(0, 8)
+
+            return a
+
+        return act
