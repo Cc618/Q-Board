@@ -169,7 +169,7 @@ class TicTacToe(BoardEnv):
         super().reset()
 
         # State for player 1
-        self.state = T.zeros([9], dtype=T.float32)
+        self.state = T.zeros([9], dtype=T.long)
         self.turns = 0
 
         return self.state, self.p1_turn
