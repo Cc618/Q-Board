@@ -41,7 +41,7 @@ class Logger:
             Displays all informations gathered during training / testing
         * Flushes all data
         '''
-        avg_loss = sum(self.losses) / len(self.losses)
+        avg_loss = 0 if len(self.losses) == 0 else sum(self.losses) / len(self.losses)
         avg_reward = sum(self.rewards) / len(self.rewards)
         min_reward = min(self.rewards)
         max_reward = max(self.rewards)
