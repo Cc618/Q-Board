@@ -17,16 +17,19 @@ class QAgent:
     '''
         Base (abstract) class for agents
     '''
-    def __init__(self, n_state, n_action, dqn, lr=1e-3, discount_factor=.98, exploration_decay=.99, exploration_min=.05, state_preprocessor=lambda x: x):
+    def __init__(self, n_state, n_action, dqn, logger=None, lr=1e-3,
+                discount_factor=.98, exploration_decay=.99,
+                exploration_min=.05, state_preprocessor=lambda x: x):
         self.n_state = n_state
         self.n_action = n_action
         self.dqn = dqn
+        self.logger = logger
         self.discount_factor = discount_factor
         self.exploration_decay = exploration_decay
         self.exploration_min = exploration_min
         self.state_preprocessor = state_preprocessor
 
-        self.exploration_rate = 0
+        self.exploration_rate = 1
         self.opti = optim.Adam(self.dqn.parameters(), lr=lr)
 
     def __get_loss(self, actions, states, next_states, rewards, dones):
@@ -36,6 +39,8 @@ class QAgent:
         raise NotImplementedError()
 
     def get_rewards(self, state):
+        state = self.state_preprocessor(state)
+
         return self.dqn(state)
 
     def act(self, state):
@@ -47,13 +52,16 @@ class QAgent:
     def learn(self, actions, states, next_states, rewards, dones):
         '''
             Learns from trajectories
+        * states and next_states are already preprocessed
         '''
         # TODO : Exploration rate change here ?
         self.exploration_rate = min(self.exploration_rate * self.exploration_decay, self.exploration_min)
 
         loss = self.__get_loss(actions, states, next_states, rewards, dones)
 
-        # TODO : Logger add loss
+        if self.logger:
+            self.logger.losses.append(loss)
+
         self.opti.zero_grad()
         loss.backward()
         self.opti.step()
@@ -63,8 +71,11 @@ class DQNAgent(QAgent):
     '''
         Simple Deep Q Network
     '''
-    def __init__(self, n_state, n_action, dqn, lr=1e-3, discount_factor=.98, exploration_decay=.99, exploration_min=.05):
-        super().__init__(n_state, n_action, dqn, lr, discount_factor, exploration_decay, exploration_min)
+    def __init__(self, n_state, n_action, dqn, *args, **kwargs):
+        '''
+            Args are super args
+        '''
+        super().__init__(n_state, n_action, dqn, *args, **kwargs)
 
     def __get_loss(self, actions, states, next_states, rewards, dones):
         # Predicted Q values

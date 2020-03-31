@@ -2,6 +2,12 @@ import torch.nn.functional as F
 import torch as T
 
 
+def f_one_hot_state(depth, min_depth):
+    '''
+        Functor for one_hot_state
+    '''
+    return lambda state: one_hot_state(state, depth, min_depth)
+
 def one_hot_state(state, depth, min_depth):
     '''
         Returns the one hot encoded state (tensor of type float32)

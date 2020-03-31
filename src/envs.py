@@ -102,12 +102,15 @@ def train(p1_act, p2_act, mem, env, epochs, logger, train_p2=True):
     - train_p2 : If True, adds also p2's trajectories
     '''
     # TODO : Save
+    # TODO : Replace p1_act by p1
     for e in range(1, epochs + 1):
         total_reward = 0
         state, p1 = env.reset()
         done = False
         while not done:
-            action = (p1_act if p1 else p2_act)(state)
+            act = p1_act if p1 else p2_act
+            action = act(state)
+
             state, reward, done, new_p1 = env.step(action)
 
             if p1:

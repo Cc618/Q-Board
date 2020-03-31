@@ -72,3 +72,5 @@ class Logger:
         s += f'Average reward : {avg_reward:<4.2f} | '
         s += f'Min reward : {min_reward:<4.2f} | '
         s += f'Max reward : {max_reward:<4.2f} | '
+
+        print(s)
