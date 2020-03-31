@@ -8,7 +8,7 @@ class MLP(nn.Module):
     '''
         Multi Layer Perceptron, only fully connected layers and activations
     '''
-    def __init__(self, n_state, hidden, n_action, flatten=False):
+    def __init__(self, n_state, n_action, hidden, flatten=False):
         '''
         - n_state : Dimension of the state
         - hidden : Int list, describes hidden layers

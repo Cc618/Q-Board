@@ -1,6 +1,8 @@
 import envs
 import agents
 import dqn
+from log import Logger
+from mem import LinearMemory
 from utils import one_hot_state
 
 
@@ -17,10 +19,10 @@ env = envs.TicTacToe()
 # TODO : Process state
 
 
-ai = agents.DQNAgent(env.n_state, env.n_action,)
+ai = agents.make(agents.DQNAgent, dqn.MLP, env, [[128]], [])
 
-
-
-
+log = Logger(20)
+mem_size = 100
+envs.train(ai.act, ai.act, LinearMemory(env.n_state, mem_size, ai.learn), env, 100, log)
 
 

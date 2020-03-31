@@ -3,17 +3,28 @@ import torch as T
 from torch import optim, nn
 import torch.nn.functional as F
 
+
+def make(agent, dqn, env, dqn_args=[], agent_args=[]):
+    '''
+        Shorthand to make an agent
+    - agent : Agent's class
+    - dqn : Agent's class
+    '''
+    return agent(env.n_state, env.n_action, dqn(env.n_state, env.n_action, *dqn_args), *agent_args)
+
+
 class QAgent:
     '''
         Base (abstract) class for agents
     '''
-    def __init__(self, n_state, n_action, dqn, lr=1e-3, discount_factor=.98, exploration_decay=.99, exploration_min=.05):
+    def __init__(self, n_state, n_action, dqn, lr=1e-3, discount_factor=.98, exploration_decay=.99, exploration_min=.05, state_preprocessor=lambda x: x):
         self.n_state = n_state
         self.n_action = n_action
         self.dqn = dqn
         self.discount_factor = discount_factor
         self.exploration_decay = exploration_decay
         self.exploration_min = exploration_min
+        self.state_preprocessor = state_preprocessor
 
         self.exploration_rate = 0
         self.opti = optim.Adam(self.dqn.parameters(), lr=lr)
