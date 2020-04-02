@@ -4,18 +4,16 @@ import dqn
 from log import Logger
 from mem import LinearMemory
 from utils import f_one_hot_state
-
-
-env = envs.TicTacToe()
-
-envs.play(envs.user_act(9), env.minimax(4), env)
-
-
-
 import solvers
 
 
-# solvers.tic_tac_toe()
+
+
+
+
+
+
+solvers.connect4()
 
 
 
