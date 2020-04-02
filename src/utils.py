@@ -3,12 +3,12 @@ import torch.nn.functional as F
 import torch as T
 
 
-def f_one_hot_state(depth, min_depth, flatten=False):
+def f_one_hot_state(depth, min_depth, new_size=None):
     '''
         Functor for one_hot_state
     '''
-    if flatten:
-        return lambda state: one_hot_state(state, depth, min_depth).view(-1)
+    if new_size is not None:
+        return lambda state: one_hot_state(state, depth, min_depth).view(*new_size)
     else:
         return lambda state: one_hot_state(state, depth, min_depth)
 
@@ -50,7 +50,7 @@ def user_act(n_action):
     '''
     def f(_):
         action = None
-        while not action:
+        while action is None:
             try:
                 action = int(input(f'Action from 0 to {n_action} > '))
             except:
@@ -108,7 +108,8 @@ def test(p1_act, p2_act, env, games=100, state_preprocessor=lambda x: x):
         state, p1 = env.reset()
         done = False
         while not done:
-            action = (p1_act if p1 else p2_act)(state_preprocessor(state))
+            # TODO : Preprocessing
+            action = (p1_act if p1 else p2_act)(state_preprocessor(state) if p1 else state)
             state, reward, done, new_p1 = env.step(action)
 
             if done:
@@ -135,17 +136,23 @@ def train(p1, p2_act, mem, env, epochs, logger, train_p2=True):
     # TODO : Save
     for e in range(1, epochs + 1):
         total_reward = 0
-        state, p1_turn = env.reset()
-        state = p1.state_preprocessor(state)
         done = False
         old_p1_state = None
         old_p2_state = None
+
+        state, p1_turn = env.reset()
+        if p1_turn:
+            state = p1.state_preprocessor(state)
+
         while not done:
             act = p1.act if p1_turn else p2_act
             action = act(state)
 
             new_state, reward, done, new_p1_turn = env.step(action)
-            new_state = p1.state_preprocessor(new_state)
+
+            # TODO : For p2
+            if new_p1_turn:
+                new_state = p1.state_preprocessor(new_state)
 
             # Add trajectories in parallel
             if p1_turn:
@@ -158,7 +165,7 @@ def train(p1, p2_act, mem, env, epochs, logger, train_p2=True):
             if new_p1_turn:
                 if old_p1_state is not None:
                     mem.add(action, old_p1_state, new_state, reward, done)
-            elif old_p2_state is not None:
+            elif old_p2_state is not None and train_p2:
                     mem.add(action, old_p2_state, new_state, reward, done)
 
             state = new_state

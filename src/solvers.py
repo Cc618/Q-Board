@@ -71,9 +71,9 @@ def connect4(path='data/connect4', seed=161831415):
     rand_epochs = 1000
     ai_epochs = 0
 
-    test_games = 100
+    test_games = 500
     mem_size = 200
-    log_freq = 500
+    log_freq = 100
 
     # 3 states per position
     depth = 3
@@ -81,26 +81,26 @@ def connect4(path='data/connect4', seed=161831415):
     dim_state = [depth, *env.n_state]
     log = Logger(log_freq)
     # Simple dqn
-    net = dqn.Conv(dim_state, env.n_action, [256], flatten=True)
+    net = dqn.Conn(depth, env.n_action)
     ai = agents.DQNAgent(env.n_state, env.n_action, net,
-                        logger=log, lr=5e-4, discount_factor=.92,
+                        logger=log, lr=1e-3, discount_factor=.98,
                         exploration_decay=.98, exploration_min=.1,
-                        state_preprocessor=f_one_hot_state(depth, -1, flatten=True))
-    mem = LinearMemory(n_state, mem_size, ai.learn)
+                        state_preprocessor=f_one_hot_state(depth, -1, new_size=[1] + dim_state))
+    mem = LinearMemory(dim_state, mem_size, ai.learn)
     # Train first against random agent
-    rand_act = envs.TicTacToe.random_act()
+    rand_act = envs.Connect4.random_act()
 
     # Loading
-    ai.load(path)
+    # TODO : ai.load(path)
 
     # Training
     print('Training vs random')
     train(ai, rand_act, mem, env, rand_epochs, log, False)
-    print('Training vs ai')
-    train(ai, ai.act, mem, env, ai_epochs, log, True)
+    # print('Training vs ai')
+    # TODO : train(ai, ai.act, mem, env, ai_epochs, log, True)
 
     # Saving
-    ai.save(path)
+    # TODO : ai.save(path)
 
     # Testing
     ai.exploration_rate = 0

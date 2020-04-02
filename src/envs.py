@@ -183,7 +183,7 @@ class Connect4(BoardEnv):
     HEIGHT = 6
 
     def __init__(self):
-        super().__init__(n_state=Connect4.HEIGHT * Connect4.WIDTH, n_action=Connect4.WIDTH)
+        super().__init__(n_state=[Connect4.HEIGHT, Connect4.WIDTH], n_action=Connect4.WIDTH)
 
     def __winner(self):
         '''
@@ -270,7 +270,7 @@ class Connect4(BoardEnv):
                 return as_blue(' O')
             if c == 1:
                 return as_red(' X')
-            return chr(0x41 + x) + str(y)
+            return ' ' + str(x)
 
         for y in range(Connect4.HEIGHT):
             # Column
@@ -292,6 +292,30 @@ class Connect4(BoardEnv):
             Creates a functor that takes valid random actions for this env
         '''
         def act(state):
+            a = rand.randint(0, 6)
+            while state[a, 0] != 0:
+                a = rand.randint(0, 6)
+
+            return a
+
+        return act
+
+    @classmethod
+    def towers_act(cls):
+        '''
+            Random actions but when there is a stack of 3
+        chips, plays this position
+        '''
+        def act(state):                
+            for x in range(Connect4.WIDTH):
+                # Get the position of the chip
+                for y in range(Connect4.HEIGHT):
+                    if state[x, y] == 0:
+                        # y is the top of the stack
+                        if y >= 3 and state[x, y - 1] == state[x, y - 2] == state[x, y - 3]:
+                            return x
+
+            # Random move
             a = rand.randint(0, 6)
             while state[a, 0] != 0:
                 a = rand.randint(0, 6)
