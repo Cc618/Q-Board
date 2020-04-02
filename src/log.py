@@ -60,6 +60,7 @@ class Logger:
         avg_reward = sum(self.rewards) / len(self.rewards)
         min_reward = min(self.rewards)
         max_reward = max(self.rewards)
+        victories = sum(self.victories)
 
         self.losses.clear()
         self.rewards.clear()
@@ -72,5 +73,6 @@ class Logger:
         s += f'Average reward : {avg_reward:<5.2f} | '
         s += f'Min reward : {min_reward:<5.2f} | '
         s += f'Max reward : {max_reward:<5.2f} | '
+        s += f'Victories : {victories:4d} | '
 
         print(s)
