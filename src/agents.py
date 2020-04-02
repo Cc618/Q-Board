@@ -101,7 +101,7 @@ class DQNAgent(QAgent):
         q = (self.dqn(states) * F.one_hot(actions, self.n_action)).sum(1)
 
         # The target Q values
-        q_target = rewards + self.discount_factor * (1 - dones) * T.max(next_states, 1)[0]
+        q_target = rewards + self.discount_factor * (1 - dones) * T.max(self.dqn(next_states), 1)[0]
 
         loss = F.mse_loss(q, q_target.detach()).mean()
         # loss = F.smooth_l1_loss(q, q_target.detach()).mean()
