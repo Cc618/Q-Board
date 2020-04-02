@@ -5,14 +5,6 @@ import torch as T
 from log import as_red, as_blue, as_green
 
 
-def seed(seed):
-    '''
-        Sets the seed of all environments (python + pytorch seed)
-    '''
-    rand.seed(seed)
-    T.manual_seed(seed)
-
-
 def random_act(n_action):
     '''
         Returns a functor which takes random actions
@@ -31,7 +23,13 @@ def user_act(n_action):
     - Returns f(state) -> action
     '''
     def f(_):
-        action = int(input(f'Action from 0 to {n_action} > '))
+        action = None
+        while not action:
+            try:
+                action = int(input(f'Action from 0 to {n_action} > '))
+            except:
+                pass
+
         while action < 0 or action >= n_action:
             print('Invalid action')
             action = int(input(f'Action from 0 to {n_action} > '))
@@ -41,17 +39,21 @@ def user_act(n_action):
     return f
 
 
-def play(p1_act, p2_act, env, render=True):
+def play(p1_act, p2_act, env, render=True, state_preprocessor=lambda x: x):
     '''
         Plays a game on env
     - p1_act / p2_act : Functor f(state) -> action
     - Returns total reward for p1 and p2 (in a tuple)
     '''
     state, p1 = env.reset()
+    if render:
+        env.render()
+
     done = False
     total_p1_reward, total_p2_reward = 0, 0
     while not done:
-        action = (p1_act if p1 else p2_act)(state)
+        s = state_preprocessor(state)
+        action = (p1_act if p1 else p2_act)(s)
         state, reward, done, new_p1 = env.step(action)
 
         if p1:
@@ -72,6 +74,7 @@ def test(p1_act, p2_act, env, games=100, state_preprocessor=lambda x: x):
         Tests p1 on several games on env
     - p1_act / p2_act : Functor f(state) -> action
     - Returns (victories, draws)
+    !!! Set exploration rate to 0 for accurate test
     '''
     victories = 0
     draws = 0
@@ -104,12 +107,13 @@ def train(p1, p2_act, mem, env, epochs, logger, train_p2=True):
     * The state is preprocessed by p1
     '''
     # TODO : Save
-    # TODO : Replace p1_act by p1
     for e in range(1, epochs + 1):
         total_reward = 0
         state, p1_turn = env.reset()
         state = p1.state_preprocessor(state)
         done = False
+        old_p1_state = None
+        old_p2_state = None
         while not done:
             act = p1.act if p1_turn else p2_act
             action = act(state)
@@ -117,11 +121,19 @@ def train(p1, p2_act, mem, env, epochs, logger, train_p2=True):
             new_state, reward, done, new_p1_turn = env.step(action)
             new_state = p1.state_preprocessor(new_state)
 
+            # Add trajectories in parallel
             if p1_turn:
+                old_p1_state = state
                 total_reward += reward
+            else:
+                old_p2_state = state
 
-            if train_p2 or p1_turn:
-                mem.add(action, state, new_state, reward, done)
+            # TODO : Train p2
+            if new_p1_turn:
+                if old_p1_state is not None:
+                    mem.add(action, old_p1_state, new_state, reward, done)
+            elif old_p2_state is not None:
+                    mem.add(action, old_p2_state, new_state, reward, done)
 
             state = new_state
             p1_turn = new_p1_turn
@@ -296,3 +308,57 @@ class TicTacToe(BoardEnv):
             return a
 
         return act
+
+    # TODO :
+    # @classmethod
+    # def minimax_act(cls, depth):
+    #     '''
+    #         Creates a functor that takes best actions using minimax algorithm
+    #     !!! The state must be unpreprocessed
+    #     '''
+    #     def score(state):
+    #         '''
+    #             Score in this state, 0 if draw / nothing, 1 if win
+    #         '''
+    #         # Check diagonals
+    #         if state[4] != 0:
+    #             if (state[0] == state[4] and state[4] == state[8]) or \
+    #                     (state[2] == state[4] and state[4] == state[6]):
+    #                 return 1
+
+    #         # Check columns
+    #         for x in range(3):
+    #             if state[x] != 0:
+    #                 if state[x] == state[x + 3] and state[x + 3] == state[x + 6]:
+    #                     return 1
+
+    #         # Check rows
+    #         for y in range(3):
+    #             if state[y * 3] != 0:
+    #                 if state[y * 3] == state[y * 3 + 1] and state[y * 3 + 1] == state[y * 3 + 2]:
+    #                     return 1
+
+    #         # Draw
+    #         return 0
+
+    #     def minimax(state, depth):
+    #         for action in range(9):
+    #             # If empty
+    #             if state[action] == 0:
+
+
+
+
+
+    #     def act(state):
+    #         scores = [minimax(action, depth) for action in range(9)]
+
+    #         # Arg max
+    #         amax = 0
+    #         for i in range(1, 9):
+    #             if scores[i] > scores[amax]:
+    #                 amax = i
+
+    #         return amax
+
+    #     return act

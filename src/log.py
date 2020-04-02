@@ -69,8 +69,8 @@ class Logger:
         s = '| '
         s += f'Epoch : {epoch:5d} | '
         s += f'Average loss : {avg_loss:<7.4f} | '
-        s += f'Average reward : {avg_reward:<4.2f} | '
-        s += f'Min reward : {min_reward:<4.2f} | '
-        s += f'Max reward : {max_reward:<4.2f} | '
+        s += f'Average reward : {avg_reward:<5.2f} | '
+        s += f'Min reward : {min_reward:<5.2f} | '
+        s += f'Max reward : {max_reward:<5.2f} | '
 
         print(s)

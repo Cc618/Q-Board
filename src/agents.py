@@ -1,3 +1,4 @@
+import os
 from random import random, randint
 import torch as T
 from torch import optim, nn
@@ -39,6 +40,24 @@ class QAgent:
             Computes the loss, doesn't back prop
         '''
         raise NotImplementedError()
+
+    def save(self, path):
+        '''
+            Saves the dqn to path
+        '''
+        T.save(self.dqn.state_dict(), path)
+    
+    def load(self, path):
+        '''
+            Loads the dqn from path if path exists,
+        does nothing otherwise
+        - Returns loaded or not
+        '''
+        if os.path.exists(path):
+            self.dqn.load_state_dict(T.load(path))
+            return True
+        
+        return False
 
     def get_rewards(self, state):
         return self.dqn(state)

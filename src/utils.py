@@ -11,6 +11,7 @@ def f_one_hot_state(depth, min_depth, flatten=False):
     else:
         return lambda state: one_hot_state(state, depth, min_depth)
 
+
 def one_hot_state(state, depth, min_depth):
     '''
         Returns the one hot encoded state (tensor of type float32)
@@ -19,3 +20,12 @@ def one_hot_state(state, depth, min_depth):
     - min_depth : Minimum value associated to depth, -1 for Tic Tac Toe since O = -1
     '''
     return F.one_hot(state - min_depth, depth).to(T.float32)
+
+
+def seed(seed):
+    '''
+        Sets the seed of all environments (python + pytorch seed)
+    '''
+    rand.seed(seed)
+    T.manual_seed(seed)
+
